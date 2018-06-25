@@ -2,28 +2,62 @@ import React, { Component } from 'react';
 import './css/pure-min.css';
 import './css/side-menu.css';
 import $ from 'jquery';
+import InputForm from './components/InputForm';
+import SubmitForm from './components/SubmitForm';
 
 class App extends Component {
 
   constructor() {
     super();
-    this.state = { lista: [] };
+    this.state = { lista: [], nome:'', email:'', senha:'' };
+    this.enviaForm = this.enviaForm.bind(this);
+    this.setNome = this.setNome.bind(this);
+    this.setEmail = this.setEmail.bind(this);
+    this.setSenha = this.setSenha.bind(this);
   }
 
-  componentWillMount() {
-    console.log("willMount");
-    
+  componentWillMount() {    
     $.ajax({
       url: 'http://cdc-react.herokuapp.com/api/autores',
       dataType: 'json',
       success: function(resposta) {
-        this.setState({lista:resposta});
+        this.setState({lista:resposta.reverse()});
       }.bind(this)
     });
   }
 
+  enviaForm(evento) {
+    evento.preventDefault();
+    
+    $.ajax({
+      url: 'http://cdc-react.herokuapp.com/api/autores',
+      contentType: 'application/json',
+      dataType: 'json',
+      type: 'post',
+      data: JSON.stringify({nome:this.state.nome, email:this.state.email, senha:this.state.senha }),
+      success: function(resposta) {
+        resposta.reverse();
+        this.setState({lista:resposta});
+      }.bind(this),
+      error: function (resposta) {
+        console.log("erro");
+      }
+    });
+  }
+
+  setNome(evento) {
+    this.setState({nome:evento.target.value});
+  }
+
+  setEmail(evento) {
+    this.setState({email:evento.target.value});
+  }
+
+  setSenha(evento) {
+    this.setState({senha:evento.target.value});
+  }
+
   render() {
-    console.log("render");
     return (
       <div id="layout">
         <a href="#menu" id="menuLink" className="menu-link">
@@ -48,23 +82,16 @@ class App extends Component {
             </div>
             <div className="content" id="content">
               <div className="pure-form pure-form-aligned">
-                <form className="pure-form pure-form-aligned">
-                  <div className="pure-control-group">
-                    <label htmlFor="nome">Nome</label> 
-                    <input id="nome" type="text" name="nome" value=""  />                  
-                  </div>
-                  <div className="pure-control-group">
-                    <label htmlFor="email">Email</label> 
-                    <input id="email" type="email" name="email" value=""  />                  
-                  </div>
-                  <div className="pure-control-group">
-                    <label htmlFor="senha">Senha</label> 
-                    <input id="senha" type="password" name="senha"  />                                      
-                  </div>
-                  <div className="pure-control-group">                                  
-                    <label></label> 
-                    <button type="submit" className="pure-button pure-button-primary">Gravar</button>                                    
-                  </div>
+                <form className="pure-form pure-form-aligned" method="post" onSubmit={this.enviaForm}>
+
+                  <InputForm id="nome" type="text" name="nome" value={this.state.nome} onChange={this.setNome} label="Nome" />
+                  
+                  <InputForm id="email" type="email" name="email" value={this.state.email} onChange={this.setEmail} label="Email" />
+
+                  <InputForm id="senha" type="password" name="senha" value={this.state.senha} onChange={this.setSenha} label="Senha" />
+
+                  <SubmitForm label="Gravar" />
+                  
                 </form>             
 
               </div>  
