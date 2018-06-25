@@ -1,9 +1,29 @@
 import React, { Component } from 'react';
 import './css/pure-min.css';
 import './css/side-menu.css';
+import $ from 'jquery';
 
 class App extends Component {
+
+  constructor() {
+    super();
+    this.state = { lista: [] };
+  }
+
+  componentWillMount() {
+    console.log("willMount");
+    
+    $.ajax({
+      url: 'http://cdc-react.herokuapp.com/api/autores',
+      dataType: 'json',
+      success: function(resposta) {
+        this.setState({lista:resposta});
+      }.bind(this)
+    });
+  }
+
   render() {
+    console.log("render");
     return (
       <div id="layout">
         <a href="#menu" id="menuLink" className="menu-link">
@@ -53,14 +73,22 @@ class App extends Component {
                   <thead>
                     <tr>
                       <th>Nome</th>
-                      <th>email</th>
+                      <th>Email</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>Alberto</td>                
-                      <td>alberto.souza@caelum.com.br</td>                
-                    </tr>
+                    {
+                      this.state.lista.map(function(autor){
+
+                        return (
+                          <tr key={autor.id}>
+                            <td>{autor.nome}</td>
+                            <td>{autor.email}</td>
+                          </tr>
+                        );
+
+                      })
+                    }            
                   </tbody>
                 </table> 
               </div>             
