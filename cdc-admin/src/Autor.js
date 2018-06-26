@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
 import { InputForm, SubmitForm } from './components/InputForm';
+import PubSub from 'pubsub-js';
 
 class FormularioAutor extends Component {
 
@@ -19,7 +20,10 @@ class FormularioAutor extends Component {
             url: 'http://cdc-react.herokuapp.com/api/autores',
             dataType: 'json',
             success: function(resposta) {
-            this.setState({lista:resposta.reverse()});
+
+                console.log(resposta);
+                
+                this.setState({lista:resposta.reverse()});
             }.bind(this)
         });
     }
@@ -34,9 +38,8 @@ class FormularioAutor extends Component {
             type: 'post',
             data: JSON.stringify({nome:this.state.nome, email:this.state.email, senha:this.state.senha }),
             success: function(resposta) {
-                resposta.reverse();
-                this.props.callbackAtualizaListagem(resposta);
-            }.bind(this),
+                PubSub.publish('atualiza-lista-autores', resposta.reverse);
+            },
             error: function (resposta) {
                 console.log("erro");
             }
@@ -120,7 +123,6 @@ class AutorBox extends Component {
     constructor() {
         super();
         this.state = { lista: [] };
-        this.atualizaListagem = this.atualizaListagem.bind(this);
       }
     
     componentDidMount() {    
@@ -131,6 +133,10 @@ class AutorBox extends Component {
             this.setState({lista:resposta.reverse()});
             }.bind(this)
         });
+
+        PubSub.subscribe('atualiza-lista-autores', function(topico, novaLista){
+            this.setState({lista: novaLista})
+        }.bind(this));
     }
 
     atualizaListagem(novaLista) {
@@ -141,7 +147,7 @@ class AutorBox extends Component {
 
         return (
             <div>
-                <FormularioAutor callbackAtualizaListagem={this.atualizaListagem} />
+                <FormularioAutor />
                 <TabelaAutores lista={this.state.lista} />
             </div>
         );
