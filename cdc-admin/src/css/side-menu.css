@@ -7,6 +7,10 @@ body {
     height: auto;
 }
 
+.error {
+    margin-left: .5em;
+    color: hsla(2, 81%, 35%, 1);
+}
 /*
 Add transition to containers so they can push in and out.
 */

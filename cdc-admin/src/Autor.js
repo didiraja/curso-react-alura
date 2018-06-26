@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import $ from 'jquery';
 import { InputForm, SubmitForm } from './components/InputForm';
 import PubSub from 'pubsub-js';
+import TratadorErros from './TratadorErros';
 
 class FormularioAutor extends Component {
 
@@ -20,9 +21,6 @@ class FormularioAutor extends Component {
             url: 'http://cdc-react.herokuapp.com/api/autores',
             dataType: 'json',
             success: function(resposta) {
-
-                console.log(resposta);
-                
                 this.setState({lista:resposta.reverse()});
             }.bind(this)
         });
@@ -37,17 +35,20 @@ class FormularioAutor extends Component {
             dataType: 'json',
             type: 'post',
             data: JSON.stringify({nome:this.state.nome, email:this.state.email, senha:this.state.senha }),
-            success: function(resposta) {
-                PubSub.publish('atualiza-lista-autores', resposta.reverse);
-            },
+            success: function(novaListagem) {
+                PubSub.publish('atualiza-lista-autores', novaListagem.reverse());
+                this.setState({nome:'', email:'', senha:''});
+
+            }.bind(this),
             error: function (resposta) {
-                console.log("erro");
+                if (resposta.status === 400) {
+                    new TratadorErros().publicaErros(resposta.responseJSON);
+                }
+            },
+            beforeSend: function () {
+                PubSub.publish("limpa-erros", {});
             }
         });
-
-        let campos = Array.from(document.querySelectorAll("form input"));
-
-        campos.map( (campo) => campo.value = "" );
     }
 
     setNome(evento) {
